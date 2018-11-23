@@ -1,10 +1,18 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import           Control.Monad
-import           Data.Aeson
+import           Data.Aeson                     ( Value (..)
+                                                , encode
+                                                , decode
+                                                , eitherDecode
+                                                , object
+                                                , (.=)
+                                                )
+import           Data.Aeson.Types               ( Parser, parseMaybe )
 import           Data.Maybe                     ( fromJust )
 import           GHC.Exts                       ( fromList )
 
+import qualified Data.ByteString.Lazy.Char8    as BS
 import qualified Data.HashMap.Strict           as HM
 import qualified Data.Text                     as T
 import qualified Data.Text.Lazy.IO             as T
@@ -66,8 +74,52 @@ reverseStringFromGetLine04 = do
 
 -------------------------------------------------------------------------------
 
+-- Aeson has a type called Parser, but it's not a type for parsers
+--   – it's a type for results of parsers
+
+-- 'Parser a' means pretty much the same as 'Either String a'
+
+parseTuple :: Value -> Parser (String, Bool)
+parseTuple (Object obj) = do
+  -- Look up the "a" field.
+  let mbFieldA = HM.lookup "a" obj
+
+  -- Fail if it wasn't found.
+  fieldA <- case mbFieldA of
+    Just x  -> return x
+    Nothing -> fail "no field 'a'"
+
+  -- Extract the value from it, or fail if it's of the wrong type.
+  a <- case fieldA of
+    String x -> return (T.unpack x)
+    _        -> fail "expected a string"
+
+  -- Do all the same for "b" (in a slightly terser way, to save space):
+  b <- case HM.lookup "b" obj of
+    Just (Bool x) -> return x
+    Just _        -> fail "expected a boolean"
+    Nothing       -> fail "no field 'b'"
+
+  -- That's all!
+  return (a, b)
+parseTuple _ = fail "expected an object"
+
+simpleParser05 :: IO ()
+simpleParser05 = do
+  let jsonString = "{\"a\":\"foo\", \"b\": false}"
+  putStrLn "Parser with valid input"
+  BS.putStrLn jsonString
+  print $ parseMaybe parseTuple =<< decode jsonString
+  putStrLn "\nParser with invalid input:"
+  let jsonStringInv = "{\"foo\":\"bar\", \"b\": false}"
+  BS.putStrLn jsonStringInv
+  print $ parseMaybe parseTuple =<< decode jsonStringInv
+
+-------------------------------------------------------------------------------
+
+-- Set this to determine which examples run
 toRun :: [Int]
-toRun = []
+toRun = [5]
 
 -------------------------------------------------------------------------------
 
@@ -84,5 +136,8 @@ main = do
     putStrLn "-------------------------------"
   when (4 `elem` toRun) $ do
     reverseStringFromGetLine04
+    putStrLn "-------------------------------"
+  when (5 `elem` toRun) $ do
+    simpleParser05
     putStrLn "-------------------------------"
 
