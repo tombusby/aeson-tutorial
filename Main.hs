@@ -1,22 +1,23 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import           Control.Monad
-import           Data.Aeson                     ( Value (..)
-                                                , encode
-                                                , decode
-                                                , eitherDecode
-                                                , object
-                                                , (.=)
-                                                )
-import           Data.Aeson.Types               ( Parser, parseMaybe )
-import           Data.Maybe                     ( fromJust )
-import           GHC.Exts                       ( fromList )
+import Control.Monad
+import Data.Aeson (
+    Value (..)
+  , encode
+  , decode
+  , eitherDecode
+  , object
+  , (.=)
+  )
+import Data.Aeson.Types ( Parser, parseMaybe )
+import Data.Maybe ( fromJust )
+import GHC.Exts ( fromList )
 
-import qualified Data.ByteString.Lazy.Char8    as BS
-import qualified Data.HashMap.Strict           as HM
-import qualified Data.Text                     as T
-import qualified Data.Text.Lazy.IO             as T
-import qualified Data.Text.Lazy.Encoding       as T
+import qualified Data.ByteString.Lazy.Char8 as BS
+import qualified Data.HashMap.Strict as HM
+import qualified Data.Text as T
+import qualified Data.Text.Lazy.IO as T
+import qualified Data.Text.Lazy.Encoding as T
 
 -------------------------------------------------------------------------------
 
