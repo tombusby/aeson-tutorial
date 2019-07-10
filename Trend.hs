@@ -13,12 +13,33 @@ data Trend = Trend
   , africa :: String
   , americas :: String
   , asia :: String
+  , foo :: Foo
   } deriving Generic
 
-test = Trend {period = "2013", africa = "1", americas = "2", asia = "3"} --, foo = Foo {baz = "whatever"}}
+data Foo = Foo
+  { bar :: String
+  , baz :: String
+  } deriving Generic
+
+test = Trend
+  { period = "2013"
+  , africa = "1"
+  , americas = "2"
+  , asia = "3"
+  , foo = Foo
+    { bar = "whatever"
+    , baz = "something else"
+    }
+  }
 
 encodeTrend :: Trend -> BSL.ByteString
 encodeTrend = encodingToLazyByteString . genericToEncoding defaultOptions
+
+-- Instance required as "deriving Generic" not enough for genericToEncoding
+-- to figure out how to handle the encoding of the contained Foo object
+instance ToJSON Foo where
+  toEncoding = genericToEncoding defaultOptions
+
 
 -- Using derived Generics we can cut out all the crap below
 
