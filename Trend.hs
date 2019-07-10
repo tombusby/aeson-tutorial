@@ -1,27 +1,63 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 import Data.Aeson
+import Data.Aeson.Encoding
+import Data.ByteString.Lazy.Char8 as BSL
+import Data.Char
+import GHC.Generics
 
 data Trend = Trend
-            { period :: String
-            , africa :: String
-            , americas :: String
-            , asia :: String
-            } deriving Show
+  { period :: String
+  , africa :: String
+  , americas :: String
+  , asia :: String
+  } deriving Generic
 
-instance ToJSON Trend where
-  toJSON Trend{..} =
-    object [ "Period"    .= period
-           , "Africa"    .= africa
-           , "Americas"  .= americas
-           , "Asia"      .= asia
-           ]
+test = Trend {period = "2013", africa = "1", americas = "2", asia = "3"} --, foo = Foo {baz = "whatever"}}
 
-  toEncoding Trend {..} =
-    pairs $ "Period"   .= period
-         <> "Africa"   .= africa
-         <> "Americas" .= americas
-         <> "Asia"     .= asia
+encodeTrend :: Trend -> BSL.ByteString
+encodeTrend = encodingToLazyByteString . genericToEncoding defaultOptions
 
-test = Trend {period = "2013", africa = "1", americas = "2", asia = "3"}
+-- Using derived Generics we can cut out all the crap below
+
+-- data Foo = Foo
+--   {
+--     baz :: String
+--   } deriving Generic
+
+-- instance ToJSON Trend where
+--   toJSON Trend{..} =
+--     object [ "Period"    .= period
+--            , "Africa"    .= africa
+--            , "Americas"  .= americas
+--            , "Asia"      .= asia
+--            ]
+
+-- instance ToJSON Trend where
+--   toJSON =
+--     genericToJSON defaultOptions { fieldLabelModifier = capitaliseFirst }
+--       where
+--         capitaliseFirst (x:xs) = toUpper x : xs
+--         capitaliseFirst []     = []
+
+--   toEncoding = genericToEncoding defaultOptions
+
+--   toEncoding Trend {..} =
+--     pairs $ "Period"   .= period
+--          <> "Africa"   .= africa
+--          <> "Americas" .= americas
+--          <> "Asia"     .= asia
+
+-- toTrendEncoding :: Trend -> Encoding
+-- toTrendEncoding Trend {..} =
+--   pairs $  "Period"   .= period
+--         <> "Africa"   .= africa
+--         <> "Americas" .= americas
+--         <> "Asia"     .= asia
+--         <> "Foo"      .= foo
+
+-- toFooEncoding :: Foo -> Encoding
+-- toFooEncoding Foo {..} =
+--   pairs $ "Baz" .= baz
